@@ -9,6 +9,7 @@ use crate::{
 
 use log::trace;
 use nu_path::canonicalize_with;
+use nu_path::is_windows_device_path;
 use nu_protocol::{
     Alias, BlockId, CustomExample, DeclId, FromValue, Module, ModuleId, ParseError, PositionalArg,
     ResolvedImportPattern, ShellError, Signature, Span, Spanned, SyntaxShape, Type, Value, VarId,
@@ -3897,6 +3898,10 @@ pub fn find_in_dirs(
     cwd: &str,
     dirs_var_name: Option<&str>,
 ) -> Option<ParserPath> {
+    if is_windows_device_path(Path::new(&filename)) {
+        return Some(ParserPath::RealPath(filename.into()));
+    }
+
     pub fn find_in_dirs_with_id(
         filename: &str,
         working_set: &StateWorkingSet,
