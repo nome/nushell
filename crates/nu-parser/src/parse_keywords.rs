@@ -3767,6 +3767,9 @@ pub fn find_in_dirs(
     cwd: &str,
     dirs_var_name: Option<&str>,
 ) -> Option<ParserPath> {
+    if filename == "\\\\.\\NUL" {
+        return Some(ParserPath::RealPath(filename.into()));
+    }
     pub fn find_in_dirs_with_id(
         filename: &str,
         working_set: &StateWorkingSet,

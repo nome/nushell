@@ -2,7 +2,7 @@ use super::util::get_rest_for_glob_pattern;
 #[allow(deprecated)]
 use nu_engine::{command_prelude::*, current_dir, get_eval_block};
 use nu_protocol::{ast, ByteStream, DataSource, NuGlob, PipelineMetadata};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[cfg(feature = "sqlite")]
 use crate::database::SQLiteDatabase;
@@ -86,16 +86,23 @@ impl Command for Open {
             let arg_span = path.span;
             // let path_no_whitespace = &path.item.trim_end_matches(|x| matches!(x, '\x09'..='\x0d'));
 
-            for path in nu_engine::glob_from(&path, &cwd, call_span, None)
-                .map_err(|err| match err {
-                    ShellError::DirectoryNotFound { span, .. } => ShellError::FileNotFound {
-                        file: path.item.to_string(),
-                        span,
-                    },
-                    _ => err,
-                })?
-                .1
-            {
+            let matches: Box<dyn Iterator<Item = Result<PathBuf, ShellError>> + Send> =
+                if path.item.to_string() == "\\\\.\\NUL" {
+                    Box::new(vec![Ok(PathBuf::from(path.item.to_string()))].into_iter())
+                } else {
+                    nu_engine::glob_from(&path, &cwd, call_span, None)
+                        .map_err(|err| match err {
+                            ShellError::DirectoryNotFound { span, .. } => {
+                                ShellError::FileNotFound {
+                                    file: path.item.to_string(),
+                                    span,
+                                }
+                            }
+                            _ => err,
+                        })?
+                        .1
+                };
+            for path in matches {
                 let path = path?;
                 let path = Path::new(&path);
 
