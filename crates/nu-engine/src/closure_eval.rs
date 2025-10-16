@@ -51,6 +51,7 @@ use std::{
 /// [`EngineState`] supplied. This makes it possible to return it from a function that
 /// only has a borrowed [`EngineState`] reference, such as the `run` function of a
 /// [`nu_engine::command_prelude::Command`] implementation.
+#[derive(Clone)]
 pub struct ClosureEval {
     engine_state: EngineState,
     block: Arc<Block>,

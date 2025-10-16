@@ -25,6 +25,7 @@ use std::sync::Arc;
 /// It is first created vial [`CallEval::new`],
 /// then has arguments added via [`CallEval::add_positional`] and [`CallEval::add_named`],
 /// and then can be run using [`CallEval::run`].
+#[derive(Clone)]
 pub struct CallEval {
     callee_stack: Stack,
     head_span: Span,
